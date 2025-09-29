@@ -7,7 +7,7 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f0f0f0;
       display: flex;
       justify-content: center;
@@ -15,6 +15,7 @@
       height: 100vh;
       flex-direction: column;
       overflow: hidden;
+      position: relative;
     }
 
     /* Panda logo background */
@@ -25,42 +26,65 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      opacity: 0.15;
+      opacity: 0.1; /* একটু হালকা */
+      z-index: 0;
+    }
+
+    /* Dark overlay for classy look */
+    body::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.25); /* ব্লার/ডার্ক ইফেক্ট */
       z-index: 0;
     }
 
     .login-box, .chat-box {
       background: rgba(255, 255, 255, 0.95);
-      padding: 20px;
-      border-radius: 12px;
-      width: 320px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      padding: 25px 20px;
+      border-radius: 16px;
+      width: 340px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
       text-align: center;
       position: relative;
       z-index: 1;
     }
     h2 {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       color: #333;
+      font-weight: 600;
     }
     input {
       width: 90%;
-      padding: 10px;
-      margin: 8px 0;
+      padding: 12px;
+      margin: 10px 0;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+    input:focus {
+      border-color: #4caf50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+      outline: none;
     }
     button {
-      padding: 10px 15px;
+      padding: 12px 20px;
       background: #4caf50;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 12px;
+      font-size: 15px;
+      transition: all 0.3s ease;
     }
     button:hover {
       background: #45a049;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     .powered {
       margin-top: 15px;
@@ -72,17 +96,18 @@
       overflow-y: auto;
       border: 1px solid #ddd;
       padding: 10px;
-      border-radius: 6px;
+      border-radius: 8px;
       margin-bottom: 10px;
       background: #f9f9f9;
       text-align: left;
     }
     .msg {
       margin: 5px 0;
-      padding: 6px 10px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 10px;
       display: inline-block;
       max-width: 80%;
+      font-size: 14px;
     }
     .me {
       background: #d1ffd1;
@@ -135,10 +160,10 @@
 
       const messagesDiv = document.getElementById("messages");
 
-      // show my message
+      // show my message as "Panda"
       const myMsg = document.createElement("div");
       myMsg.className = "msg me";
-      myMsg.textContent = "Me: " + msg;
+      myMsg.textContent = "Panda: " + msg;
       messagesDiv.appendChild(myMsg);
 
       // scroll down
@@ -146,11 +171,11 @@
 
       input.value = "";
 
-      // simulate reply
+      // simulate reply as "Bampo"
       setTimeout(() => {
         const reply = document.createElement("div");
         reply.className = "msg other";
-        reply.textContent = "Friend: " + msg.split("").reverse().join("");
+        reply.textContent = "Bampo: " + msg;
         messagesDiv.appendChild(reply);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }, 1000);
