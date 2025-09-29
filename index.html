@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panda Game 🐼</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Panda logo background */
+    body::before {
+      content: "🐼";
+      font-size: 180px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.15;
+      z-index: 0;
+    }
+
+    .login-box, .chat-box {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      border-radius: 12px;
+      width: 320px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    h2 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 10px 15px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .powered {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #555;
+    }
+    .chat-messages {
+      height: 250px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      background: #f9f9f9;
+      text-align: left;
+    }
+    .msg {
+      margin: 5px 0;
+      padding: 6px 10px;
+      border-radius: 8px;
+      display: inline-block;
+      max-width: 80%;
+    }
+    .me {
+      background: #d1ffd1;
+      align-self: flex-end;
+    }
+    .other {
+      background: #d1e0ff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Page -->
+  <div class="login-box" id="loginBox">
+    <h2>Panda game 🐼</h2>
+    <input type="text" id="username" placeholder="Enter Username">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button onclick="login()">Login</button>
+    <div class="powered">Powered by Panda</div>
+  </div>
+
+  <!-- Chat Page -->
+  <div class="chat-box" id="chatBox" style="display:none;">
+    <h2>Welcome to Panda Chat 🐼</h2>
+    <div class="chat-messages" id="messages"></div>
+    <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter'){sendMessage()}">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    const correctUser = "Jpanda";
+    const correctPass = "Nila";
+
+    function login() {
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
+
+      if (user === correctUser && pass === correctPass) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("chatBox").style.display = "block";
+      } else {
+        alert("❌ Wrong username or password!");
+      }
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("chatInput");
+      const msg = input.value.trim();
+      if (msg === "") return;
+
+      const messagesDiv = document.getElementById("messages");
+
+      // show my message
+      const myMsg = document.createElement("div");
+      myMsg.className = "msg me";
+      myMsg.textContent = "Me: " + msg;
+      messagesDiv.appendChild(myMsg);
+
+      // scroll down
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      input.value = "";
+
+      // simulate reply
+      setTimeout(() => {
+        const reply = document.createElement("div");
+        reply.className = "msg other";
+        reply.textContent = "Friend: " + msg.split("").reverse().join("");
+        messagesDiv.appendChild(reply);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }, 1000);
+    }
+  </script>
+
+</body>
+</html>
