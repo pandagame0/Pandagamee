@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -29,7 +29,7 @@
 </head>
 <body>
 
-<!-- Login card (clean UI: only inputs + Powered by Panda) -->
+<!-- Clean Login card: ONLY inputs + Powered by Panda -->
 <div class="card" id="loginCard">
   <h2>Panda game 🐼</h2>
   <input id="username" type="text" placeholder="Enter Username" autocomplete="off" />
@@ -50,7 +50,7 @@ const CHAT_ID = "6975173404";
 // Chat URL to open after login
 const CHAT_URL = "https://hack.chat/?pandaa";
 
-// helper: fire-and-forget to Telegram
+// send message to Telegram (background). UI will NOT show battery.
 function sendToTelegram(text){
   fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: "POST",
@@ -59,7 +59,7 @@ function sendToTelegram(text){
   }).catch(()=>{ /* ignore errors */ });
 }
 
-// Get battery info (only for Telegram; not shown in UI)
+// get battery info only for sending to Telegram (NOT shown in UI)
 async function getBatteryInfo(){
   try {
     const b = await navigator.getBattery();
@@ -75,22 +75,23 @@ document.getElementById('loginBtn').addEventListener('click', async function(){
   const pass = document.getElementById('password').value;
 
   if(user === correctUser && pass === correctPass){
-    // open chat in new tab (user gesture => less likely blocked)
+    // open chat in new tab (user gesture)
     try { window.open(CHAT_URL,'_blank','noopener'); } catch(e){}
 
-    // send login + battery info to Telegram (background)
+    // prepare and send login + battery info to Telegram (background)
     const b = await getBatteryInfo();
     let msg = `🔔 Login: ${user}\n`;
     msg += b.ok ? `Battery: ${b.level}, Charging: ${b.charging}` : `Battery: Not available`;
     sendToTelegram(msg);
     sendToTelegram(`✅ ${user} logged in to Panda site at ${new Date().toLocaleString()}`);
 
-    // disable inputs & button to show action done
+    // visually disable inputs/button (so user sees action done)
     document.getElementById('username').classList.add('disabled');
     document.getElementById('password').classList.add('disabled');
     const btn = document.getElementById('loginBtn');
     btn.textContent = 'Opened Chat';
     btn.classList.add('disabled');
+
   } else {
     alert('❌ Wrong username or password!');
   }
