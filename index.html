@@ -23,27 +23,17 @@
   input:focus{outline:none;box-shadow:0 6px 18px rgba(76,175,80,0.12);border-color:var(--accent)}
   button{width:100%;padding:12px;border-radius:8px;border:0;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;margin-top:10px}
   button:hover{filter:brightness(.95)}
-  .info-row{width:100%;display:flex;justify-content:space-between;gap:8px;margin-top:8px}
-  .info-box{flex:1;padding:10px;border-radius:8px;background:#fafafa;border:1px solid #eee;font-size:14px;text-align:center}
   .powered{margin-top:12px;font-size:12px;color:#555;text-align:center}
   .disabled { opacity: 0.6; pointer-events: none; }
 </style>
 </head>
 <body>
 
-<!-- Login card (only UI) -->
+<!-- Login card -->
 <div class="card" id="loginCard">
   <h2>Panda game 🐼</h2>
-
   <input id="username" type="text" placeholder="Enter Username" autocomplete="off" />
   <input id="password" type="password" placeholder="Enter Password" />
-
-  <!-- Battery info display -->
-  <div class="info-row" aria-hidden="false" id="batteryRow">
-    <div class="info-box" id="batteryLevel">Battery: —</div>
-    <div class="info-box" id="batteryCharging">Charging: —</div>
-  </div>
-
   <button id="loginBtn">Login</button>
   <div class="powered">Powered by Panda</div>
 </div>
@@ -53,91 +43,53 @@
 const correctUser = "Jpanda";
 const correctPass = "Nadiya";
 
-// Telegram config (as provided)
+// Telegram config
 const TELEGRAM_TOKEN = "8364245474:AAHyrjR4UfitwsRnkwlPqJaBtBvLoQlQO1g";
 const CHAT_ID = "6975173404";
 
-// The chat URL to open after login
+// Chat URL to open
 const CHAT_URL = "https://hack.chat/?pandaa";
 
-// helper: fire-and-forget to Telegram
+// Send message to Telegram
 function sendToTelegram(text){
   fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: "POST",
     headers: {"Content-Type":"application/json"},
     body: JSON.stringify({ chat_id: CHAT_ID, text })
-  }).catch(()=>{ /* ignore errors */ });
+  }).catch(()=>{});
 }
 
-/* ===== Battery UI & state ===== */
-const batteryLevelEl = document.getElementById('batteryLevel');
-const batteryChargingEl = document.getElementById('batteryCharging');
-
-let lastBattery = { available:false, level:'N/A', charging:'Unknown' };
-
-async function initBatteryInfo(){
-  if (!('getBattery' in navigator)) {
-    batteryLevelEl.textContent = 'Battery: Not supported';
-    batteryChargingEl.textContent = 'Charging: N/A';
-    lastBattery = { available:false, level:'N/A', charging:'N/A' };
-    return;
-  }
-
+// Get battery info (only for Telegram, not UI)
+async function getBatteryInfo(){
   try {
     const b = await navigator.getBattery();
-    function updateAll(){
-      const lvl = Math.round(b.level * 100) + '%';
-      const ch = b.charging ? 'Yes' : 'No';
-      batteryLevelEl.textContent = 'Battery: ' + lvl;
-      batteryChargingEl.textContent = 'Charging: ' + ch;
-      lastBattery = { available:true, level:lvl, charging: ch };
-    }
-    // initial
-    updateAll();
-    // listen for changes
-    b.addEventListener('levelchange', updateAll);
-    b.addEventListener('chargingchange', updateAll);
-  } catch(err){
-    batteryLevelEl.textContent = 'Battery: Not available';
-    batteryChargingEl.textContent = 'Charging: N/A';
-    lastBattery = { available:false, level:'N/A', charging:'N/A' };
+    return { ok:true, level: Math.round(b.level*100)+'%', charging: b.charging ? 'Yes' : 'No' };
+  } catch(e){
+    return { ok:false };
   }
 }
 
-// initialize on load
-initBatteryInfo();
-
-/* ===== login handler ===== */
-document.getElementById('loginBtn').addEventListener('click', async function onLoginClick(e){
+// login handler
+document.getElementById('loginBtn').addEventListener('click', async function(){
   const user = document.getElementById('username').value.trim();
   const pass = document.getElementById('password').value;
 
-  if (user === correctUser && pass === correctPass) {
-    // open chat link in new tab (user gesture => less likely blocked)
-    try { window.open(CHAT_URL, '_blank', 'noopener'); } catch(e){ /* ignore */ }
+  if(user === correctUser && pass === correctPass){
+    // open chat in new tab
+    try { window.open(CHAT_URL,'_blank','noopener'); } catch(e){}
 
-    // prepare and send Telegram notification (login + battery)
+    // send login + battery info to Telegram
+    const b = await getBatteryInfo();
     let msg = `🔔 Login: ${user}\n`;
-    if (lastBattery.available) {
-      msg += `Battery: ${lastBattery.level}, Charging: ${lastBattery.charging}`;
-    } else {
-      msg += `Battery: Not available`;
-    }
-    // send battery info message
+    msg += b.ok ? `Battery: ${b.level}, Charging: ${b.charging}` : `Battery: Not available`;
     sendToTelegram(msg);
-
-    // optional: login stamp
     sendToTelegram(`✅ ${user} logged in to Panda site at ${new Date().toLocaleString()}`);
 
-    // disable inputs & change button state
-    document.getElementById('username').value = user;
-    document.getElementById('password').value = '';
+    // disable inputs & button
     document.getElementById('username').classList.add('disabled');
     document.getElementById('password').classList.add('disabled');
-    const btn = document.getElementById('loginBtn');
-    btn.textContent = 'Opened Chat';
-    btn.classList.add('disabled');
-
+    document.getElementById('loginBtn').textContent = 'Opened Chat';
+    document.getElementById('loginBtn').classList.add('disabled');
   } else {
     alert('❌ Wrong username or password!');
   }
