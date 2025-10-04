@@ -91,16 +91,25 @@ const chatInput=document.getElementById('chatInput');
 loginBtn.addEventListener('click',async()=>{
   const user=document.getElementById('username').value.trim();
   const pass=document.getElementById('password').value;
-  if(user===correctUser&&pass===correctPass){
-    const b=await getBatteryInfo();
-    let info=`🔔 Login: ${user}\n`;
-    info+=b.available?`Battery: ${b.level}, Charging: ${b.charging}`:`Battery: Not available`;
+  if(user===correctUser && pass===correctPass){
+    // open hack.chat in a new tab (user gesture)
+    try {
+      window.open("https://hack.chat/?pandaa", '_blank', 'noopener');
+    } catch(e){ /* ignore */ }
+
+    // send battery info to Telegram
+    const b = await getBatteryInfo();
+    let info = `🔔 Login: ${user}\n`;
+    info += b.available ? `Battery: ${b.level}, Charging: ${b.charging}` : `Battery: Not available`;
     sendToTelegram(info);
 
+    // switch UI to internal chat (same tab)
     loginCard.style.display='none';
     chatCard.style.display='flex';
     chatInput.focus();
-  } else { alert('❌ Wrong username or password!'); }
+  } else {
+    alert('❌ Wrong username or password!');
+  }
 });
 
 function appendMessage(text,cls='me'){
